@@ -2,6 +2,7 @@
 import os
 import torch
 import pandas as pd
+from PIL import Image
 from skimage import io, transform
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,17 +15,17 @@ import torch.nn.functional as F
 class CoinDataset(Dataset):
     """GeoGuessr dataset."""
 
-    def __init__(self, csv_file, root_dir, transform=None, num_classes=121):
+    def __init__(self, csv_file, transform=None, num_classes=121):
         """
         Args:
             csv_file (string): Path to the csv file with coordinates.
-            root_dir (string): Directory with all the images.
+            
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
         self.num_classes = num_classes
         self.data = pd.read_csv(csv_file)
-        self.root_dir = root_dir
+        
         self.transform = transform
 
     def __len__(self):
@@ -36,7 +37,7 @@ class CoinDataset(Dataset):
 
         #img_name = os.path.join(self.root_dir,
                                 #self.coordinates.iloc[idx, 0])
-        image = io.imread(os.path.join(self.data.iloc[idx, 0],self.data.iloc[idx, 1]))
+        image = Image.open(os.path.join(self.data.iloc[idx, 0],self.data.iloc[idx, 1]))
         label = self.data.iloc[idx, 3]
         
         # Convert to one-hot vector
