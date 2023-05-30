@@ -6,6 +6,7 @@ from CoinDataset import CoinDataset
 import torchvision.transforms as transforms
 import pandas as pd
 from torch.optim import lr_scheduler
+from Sophia import SophiaG
 
 class ModelTrainer:
     
@@ -86,9 +87,14 @@ class ModelTrainer:
         loss = getattr(nn, values.pop('loss'))
         self.loss = loss(**values.pop('loss_config'))
 
+        
         # Create optimizer.
-        optimizer = getattr(torch.optim, values.pop('optimizer'))
-        self.optimizer = optimizer(model.parameters(), **values.pop('optimizer_params'))
+        if values['optimizer'] == 'SophiaG':
+            self.optimizer = SophiaG(model.parameters(), **values.pop('optimizer_params'))
+            values.pop('optimizer')
+        else:
+            optimizer = getattr(torch.optim, values.pop('optimizer'))
+            self.optimizer = optimizer(model.parameters(), **values.pop('optimizer_params'))
 
         # Scheduler is optional.
         self.scheduler = values.pop('scheduler')
@@ -130,8 +136,8 @@ class ModelTrainer:
                     transform=transform, num_classes=len(unique_classes))
         print(len(train_dataset))
         # Define the dataloaders
-        train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=6)
-        val_dataloader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=6)
+        train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=2)
+        val_dataloader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=2)
         
         
 
