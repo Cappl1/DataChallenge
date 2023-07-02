@@ -4,8 +4,10 @@ from torch.utils.data import DataLoader
 from tqdm.notebook import tnrange
 from CoinDataset import CoinDataset
 import torchvision.transforms as transforms
-import pandas as pd
+import pandas as pd 
 from torch.optim import lr_scheduler
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
 
 
 class ModelTrainer:
@@ -145,8 +147,8 @@ class ModelTrainer:
         dataset_sizes = {"train": len(train_dataset), "val" : len(val_dataset)}
         
         for i, batch in enumerate(train_dataloader):
-            x, y = batch["image"], batch["label"]
-            print(x.shape, y.shape)
+            x, y , z= batch["image"], batch["label"], batch['text_embedding']
+            print(x.shape, y.shape, z.shape)
             break
         print("data loaded")
                 
@@ -212,7 +214,7 @@ class ModelTrainer:
         self.__dict__ |= checkpoint
 
 
-    def train(self, num_epochs=10):
+    def train(self, num_epochs=10, mulitmodal=False):
         torch.backends.cudnn.benchmark = True
         best_acc = 0.0
 
@@ -230,12 +232,19 @@ class ModelTrainer:
                 running_loss = 0.0
                 running_corrects = 0
 
+                all_preds = []
+                all_labels = []
                 # Iterate over data.
                 for idx, batch in enumerate(self.dataloaders[phase]):
+                    
+                    # Initialize lists to store predictions and labels
+                    
                 
-                    inputs, labels = batch["image"], batch["label"]
+                    inputs, labels, text_embedding = batch["image"], batch["label"], batch["text_embedding"]
                     inputs = inputs.to(self.device, non_blocking=True)
                     labels = labels.to(self.device, non_blocking=True)
+                    if mulitmodal == True:
+                        inputs = {'image': inputs, 'text_embedding': text_embedding}
 
                     # zero the parameter gradients
                     self.optimizer.zero_grad()
@@ -261,9 +270,15 @@ class ModelTrainer:
                         _, preds = torch.max(outputs, 1)
                         _,labels = torch.max(labels, 1)
                     # statistics
-
-                    running_loss += loss.item() * inputs.size(0)
+                    if mulitmodal == True:
+                        running_loss += loss.item() * inputs['image'].size(0)
+                    else:
+                        running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels)
+                    
+                     # Store predictions and labels
+                    all_preds.extend(preds.cpu().numpy())
+                    all_labels.extend(labels.cpu().numpy())
                     
                 if phase == 'train':
                     self.scheduler.step()
@@ -279,6 +294,16 @@ class ModelTrainer:
                     self.train_loss_history.append(epoch_loss)
                 
                 print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
+                # Calculate and print confusion matrix
+                cm = confusion_matrix(all_labels, all_preds)
+                print(f'{phase} Confusion Matrix: \n{cm}')
+                
+                # Visualization of the Confusion Matrix
+                fig, ax = plt.subplots()
+                im = ax.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+                ax.figure.colorbar(im, ax=ax)
+                plt.title(f'{phase} Confusion Matrix')
+                plt.show()
                 
                 # deep copy the model
                 if phase == 'val' and epoch_acc > best_acc:

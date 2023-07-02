@@ -12,6 +12,7 @@ import torch.nn.functional as F
 
 
 
+
 class CoinDataset(Dataset):
     """GeoGuessr dataset."""
 
@@ -25,7 +26,7 @@ class CoinDataset(Dataset):
         """
         self.num_classes = num_classes
         self.data = pd.read_csv(csv_file)
-        
+        self.embedding = np.load('embeddings.npy')
         self.transform = transform
 
     def __len__(self):
@@ -39,11 +40,13 @@ class CoinDataset(Dataset):
                                 #self.coordinates.iloc[idx, 0])
         image = Image.open(os.path.join(self.data.iloc[idx, 0],self.data.iloc[idx, 1]))
         label = self.data.iloc[idx, 3]
+        text_embedding = torch.tensor(self.embedding[label])
+        
         
         # Convert to one-hot vector
         label = F.one_hot(torch.tensor(label), num_classes=self.num_classes)
         
-        sample = {'image': image, 'label': label}
+        sample = {'image': image, 'label': label, 'text_embedding': text_embedding}
 
         if self.transform:
             sample["image"] = self.transform(sample["image"])
