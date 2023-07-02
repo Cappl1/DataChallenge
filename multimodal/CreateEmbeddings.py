@@ -3,8 +3,7 @@ import pandas as pd
 import csv
 import numpy as np
 
-openai.api_key = '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'
-#'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'
+openai.api_key = 
 
 # Read the CSV file using pandas
 df = pd.read_csv('val1.csv')
