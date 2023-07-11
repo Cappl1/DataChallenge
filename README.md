@@ -2,7 +2,7 @@
 # Data Challenge
 
 
-This project represents our contribution to the Data Challenges at Goethe University Frankfurt. The module is overseen by Dr. Karsten Tolle and Sebastian Gampe.
+This project represents our contribution to the Data Challenges at [Goethe University Frankfurt](https://www.uni-frankfurt.de/de?locale=de). The module is overseen by Dr. Karsten Tolle and Sebastian Gampe.
 
 The challenge revolves around the classification of historical coins as part of the Corpus Nummorum Project: https://www.corpus-nummorum.eu/
 
