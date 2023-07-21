@@ -25,7 +25,11 @@ All trained models from the all result notebook can be found here:
 https://hessenbox-a10.rz.uni-frankfurt.de/getlink/fiWTBGKi44LLdUj141zK5T/
 
 Incase installing requirments.txt does not work try to use this command for pytorch and cuda.
+
+
 conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+
+
 Also make sure that your GPU has cuda drivers installed that work with cuda 11.8
 
 
